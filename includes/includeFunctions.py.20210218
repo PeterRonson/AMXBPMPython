@@ -1,0 +1,136 @@
+#!/usr/bin/python3
+#
+# Common python functions
+#
+# 01/03/2020	Created
+# 04/03/2020	Added title option to pushOver
+#		Updated to use directories rather than myconfig
+import logging
+import os
+import socket
+import sys
+import requests
+import base64
+from requests import Session
+###################################################################
+###################################################################
+LOGDIR="/applis/nsbp/tibco/bpm/tibcohost/nsb-bpm-1-host/data_3.2.x/nodes/nsb-bpm-1-node1/logs"
+###################################################################
+LOGFILE=""
+DEBUGLEVEL=logging.INFO
+#
+#
+# Setup a default logger based on the script name, add a console logger 
+# if debug mode is set
+#
+def logSetup(thisName,logLevel=logging.INFO,isConsole=True):
+	global LOGFILE
+	LOGFILE=LOGDIR + "/" + thisName.replace(".py",".log")
+	# set up logging to file - see previous section for more details
+	logging.basicConfig(level=logLevel,
+                    format='%(asctime)s|%(levelname)-8s|%(name)-12s|%(message)s',
+                    datefmt='%d/%m/%y %H:%M',
+                    filename=LOGFILE,
+                    filemode='a')
+	if isConsole:
+		# define a Handler which writes INFO messages or higher to the sys.stderr
+		console = logging.StreamHandler()
+		console.setLevel(logging.DEBUG)
+		# set a format which is simpler for console use
+		formatter = logging.Formatter('%(levelname)-8s|%(name)s|%(message)s')
+		# tell the handler to use this format
+		console.setFormatter(formatter)
+		# add the handler to the root logger
+		logging.getLogger('').addHandler(console)
+#
+# Change the log level
+#
+def logLevel(level):
+	logging.getLogger('').setLevel(level)
+	global DEBUGLEVEL
+	DEBUGLEVEL=level
+#
+# Toggle debug mode
+#
+def logToggle(thisName):
+	global DEBUGLEVEL
+	# If debug file exists	
+	if os.path.exists("/tmp/" + thisName + ".debug"):
+		logLevel(logging.DEBUG)
+		# If already set theb do nothing else
+		if os.path.exists("/tmp/" + thisName + ".set") == False:
+			try:
+				# Create set file to show debughas been set
+				open("/tmp/" + thisName + ".set",'a').close()
+			except:
+				logging.error("Cannot create set file")
+			logging.debug("Log level set to debug")
+	else:
+		# Check if set file exists, if it does then change level
+		# and remove the set file
+		if os.path.exists("/tmp/" + thisName + ".set"):
+			logging.debug("Log level reset to info")
+			logLevel(logging.INFO)
+			try:
+				os.remove("/tmp/" + thisName + ".set")
+			except:
+				logging.error("Cannot remove set file")#
+#
+# Output heading
+#
+def logHeader(message,thisLevel=logging.INFO):
+	mlen=len(message)
+	line="=" * mlen
+	if thisLevel == logging.DEBUG:
+		logging.debug(line)
+		logging.debug(message)
+		logging.debug(line)
+	elif thisLevel == logging.INFO:
+		logging.info(line)			
+		logging.info(message)			
+		logging.info(line)
+#
+#
+#
+def logTouch():
+	Path(LOGFILE).touch(exist_ok=True)
+
+#
+# Return string with human readable
+# size
+#
+def getFileSize(num, suffix='B'):
+	for unit in [' ',' K',' M',' G',' T',' P',' E',' Z']:
+		if abs(num) < 1024.0:
+			return "%3.1f%s%s" % (num, unit, suffix)
+		num /= 1024.0
+	return "%.1f%s%s" % (num, 'Yi', suffix)
+
+#
+# Append line to text file
+#
+def fileAppend(fileName, text_to_append):
+	rtn=True
+	"""Append given text as a new line at the end of file"""
+	# Open the file in append & read mode ('a+')
+	try:
+		with open(fileName, "a+") as file_object:
+			# Move read cursor to the start of file.
+			file_object.seek(0)
+			# If file is not empty then append '\n'
+			data = file_object.read(100)
+			if len(data) > 0:
+				file_object.write("\n")
+			# Append text at the end of file
+			file_object.write(text_to_append)
+	except Exception as ef:
+		logging.error("Cannot Append to " + fileName + " : " + str(ef))
+		rtn=False
+	return rtn
+#################################################################
+# decode
+#################################################################
+def decode(inStr):
+        outStr=base64.decodestring(inStr)
+        return outStr
+
