@@ -1,8 +1,8 @@
 #####################################
 #  AMX ADMIN URL
 #####################################
-ADMINBASEURL="http://hnsblx59.dns21.socgen:8180"
-AMXADMINURL="http://hnsblx59.dns21.socgen:8180/amxadministrator"
+ADMINBASEURL="http://bpmserver:8180"
+AMXADMINURL="http://bpmserver:8180/amxadministrator"
 AMXADMINUSER="root"
 # Encrypted
 AMXADMINPASSWD="dA=="
